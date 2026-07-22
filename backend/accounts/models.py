@@ -1,3 +1,19 @@
 from django.db import models
+from django.contrib.auth.models import AbstractUser
 
-# Create your models here.
+
+class User(AbstractUser):
+    ROLE_CHOICES = [
+        ("candidate", "Candidate"),
+        ("recruiter", "Recruiter"),
+        ("admin", "Admin"),
+    ]
+
+    role = models.CharField(
+        max_length=20,
+        choices=ROLE_CHOICES,
+        default="candidate",
+    )
+
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)

@@ -1,31 +1,44 @@
-import json
+from django.conf import settings
 
 from google import genai
-from django.conf import settings
 
 client = genai.Client(api_key=settings.GEMINI_API_KEY)
 
 
 def analyze_resume_with_gemini(resume_text):
+
+    # -------------------------------
+    # DEVELOPMENT MODE (No API calls)
+    # -------------------------------
+    if not settings.USE_GEMINI:
+        return {
+            "score": 88,
+            "skills": "Python, Django, React, SQL, REST APIs",
+            "education": "Bachelor of Engineering",
+            "experience": "Flutter Developer Intern",
+            "missing_skills": "Docker, AWS, CI/CD",
+            "suggestions": "Learn Docker, AWS and build more backend projects.",
+        }
+
+    # -------------------------------
+    # REAL GEMINI
+    # -------------------------------
     prompt = f"""
-You are an expert ATS Resume Analyzer.
+You are an expert technical recruiter.
 
-Analyze the resume and return ONLY valid JSON.
+Analyze the following resume.
 
-Do not add markdown.
-Do not add explanation.
-Do not use triple backticks.
+Return ONLY JSON.
 
-Return this exact JSON format:
+Example:
 
 {{
-    "score": 0,
-    "skills": [],
-    "education": "",
-    "experience": "",
-    "missing_skills": [],
-    "suggestions": [],
-    "interview_questions": []
+"score":85,
+"skills":"Python, Django",
+"education":"Bachelor of Engineering",
+"experience":"2 years",
+"missing_skills":"Docker, AWS",
+"suggestions":"Improve React skills"
 }}
 
 Resume:
@@ -34,8 +47,10 @@ Resume:
 """
 
     response = client.models.generate_content(
-        model="gemini-3.5-flash",
+        model="gemini-2.5-flash",
         contents=prompt,
     )
+
+    import json
 
     return json.loads(response.text)

@@ -6,7 +6,7 @@ from .serializers import ResumeSerializer
 from .services.pdf_extractor import extract_text_from_pdf
 
 from analyzer.models import ResumeAnalysis
-from analyzer.services.resume_analyzer import analyze_resume
+from analyzer.services.gemini_service import analyze_resume_with_gemini
 
 
 class ResumeUploadView(generics.CreateAPIView):
@@ -21,7 +21,7 @@ class ResumeUploadView(generics.CreateAPIView):
         resume.extracted_text = extracted_text
         resume.save()
 
-        analysis = analyze_resume(extracted_text)
+        analysis = analyze_resume_with_gemini(extracted_text)
 
         ResumeAnalysis.objects.create(
             resume=resume,

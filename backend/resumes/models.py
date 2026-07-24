@@ -16,4 +16,4 @@ class Resume(models.Model):
     uploaded_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
-        return f"{self.user.full_name} Resume"
+        return f"Resume #{self.id} - {self.user.full_name}"

@@ -46,6 +46,7 @@ INSTALLED_APPS = [
     'accounts',
     "resumes",
     "analyzer",
+    "interviews",
 ]
 
 MIDDLEWARE = [
@@ -145,3 +146,4 @@ SIMPLE_JWT = {
 MEDIA_URL = "/media/"
 MEDIA_ROOT = BASE_DIR / "media"
 GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
+USE_GEMINI = False

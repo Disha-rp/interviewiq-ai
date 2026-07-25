@@ -1,7 +1,9 @@
 from google import genai
 from django.conf import settings
 import json
+import logging
 
+logger = logging.getLogger(__name__)
 client = genai.Client(api_key=settings.GEMINI_API_KEY)
 
 
@@ -43,7 +45,8 @@ Example:
 
             return json.loads(response.text)
 
-        except Exception:
+        except Exception as e:
+            logger.exception(f"Gemini model '{model}' failed")
             continue
 
     # Fallback if all Gemini models fail

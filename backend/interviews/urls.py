@@ -4,6 +4,7 @@ from .views import (
     InterviewCreateView,
     InterviewQuestionListView,
     SubmitAnswerView,
+    InterviewReportView,
 )
 
 urlpatterns = [
@@ -23,5 +24,11 @@ urlpatterns = [
         "questions/<int:question_id>/answer/",
         SubmitAnswerView.as_view(),
         name="submit-answer",
+    ),
+
+    path(
+        "<int:interview_id>/report/",
+        InterviewReportView.as_view(),
+        name="interview-report",
     ),
 ]

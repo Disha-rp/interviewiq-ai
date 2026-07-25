@@ -6,12 +6,17 @@ from rest_framework import status
 from rest_framework.response import Response
 from resumes.models import Resume
 from .services.answer_evaluator import evaluate_answer
+from django.db.models import Avg
+from rest_framework.views import APIView
+from rest_framework.response import Response
+from .services.report_generator import generate_interview_report
 
 from .models import Interview, InterviewQuestion
 from .serializers import (
     InterviewSerializer,
     InterviewQuestionSerializer,
     SubmitAnswerSerializer,
+    InterviewReportSerializer,
 )
 from .services.question_generator import generate_interview_questions
 
@@ -93,3 +98,68 @@ class SubmitAnswerView(generics.GenericAPIView):
             },
             status=status.HTTP_200_OK,
         )
+
+class InterviewReportView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request, interview_id):
+
+        interview = Interview.objects.get(
+            id=interview_id,
+            user=request.user
+        )
+
+        questions = InterviewQuestion.objects.filter(
+            interview=interview
+        )
+
+        total_questions = questions.count()
+
+        questions_answered = questions.exclude(
+            answer__isnull=True
+        ).exclude(
+            answer=""
+        ).count()
+
+        questions_remaining = total_questions - questions_answered
+
+        answered_questions = questions.exclude(
+            answer__isnull=True
+        ).exclude(
+            answer=""
+        )
+
+        average_score = (
+            answered_questions.aggregate(avg=Avg("score"))["avg"] or 0
+        )
+
+        overall_score = average_score * 10
+
+        completion_percentage = (
+            (questions_answered / total_questions) * 100
+            if total_questions > 0 else 0
+        )
+
+        status = (
+            "Completed"
+            if questions_answered == total_questions
+            else "Interview In Progress"
+        )
+
+        data = {
+            "overall_score": round(overall_score, 2),
+            "average_score": round(average_score, 2),
+            "total_questions": total_questions,
+            "questions_answered": questions_answered,
+            "questions_remaining": questions_remaining,
+            "completion_percentage": round(completion_percentage, 2),
+            "status": status,
+        }
+
+        # Generate AI Interview Summary
+        ai_report = generate_interview_report(answered_questions)
+
+        # Merge AI response into statistics
+        data.update(ai_report)
+
+        return Response(data)

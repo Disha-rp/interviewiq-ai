@@ -33,3 +33,15 @@ class InterviewQuestionSerializer(serializers.ModelSerializer):
 
 class SubmitAnswerSerializer(serializers.Serializer):
     answer = serializers.CharField()
+
+class InterviewReportSerializer(serializers.Serializer):
+    overall_score = serializers.FloatField()
+    average_score = serializers.FloatField()
+
+    total_questions = serializers.IntegerField()
+    questions_answered = serializers.IntegerField()
+    questions_remaining = serializers.IntegerField()
+
+    completion_percentage = serializers.FloatField()
+
+    status = serializers.CharField()

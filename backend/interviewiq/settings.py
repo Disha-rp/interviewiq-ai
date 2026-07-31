@@ -150,7 +150,7 @@ SIMPLE_JWT = {
 MEDIA_URL = "/media/"
 MEDIA_ROOT = BASE_DIR / "media"
 GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
-USE_GEMINI = False
+USE_GEMINI = True
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:5173",
     "http://localhost:5174",

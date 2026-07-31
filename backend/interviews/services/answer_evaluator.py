@@ -20,40 +20,35 @@ Question:
 Candidate Answer:
 {answer}
 
-Return ONLY valid JSON.
+Evaluate the answer out of 10.
 
-Example:
+Return ONLY valid JSON in this format:
 
 {{
     "score": 8,
-    "feedback": "Good explanation. Mention more real-world examples."
+    "feedback": "Good answer.",
+    "ai_feedback": "The explanation is correct. Mention wrapper functions, @ syntax, and a practical example to make your answer stronger."
 }}
 """
 
-    models = [
-        "gemini-2.0-flash",
-        "gemini-2.5-flash-lite",
-        "gemini-flash-lite-latest",
-    ]
+    try:
+        response = client.models.generate_content(
+            model="gemini-flash-lite-latest",
+            contents=prompt,
+        )
 
-    for model in models:
-        try:
-            response = client.models.generate_content(
-                model=model,
-                contents=prompt,
-            )
+        text = response.text.strip()
 
-            return json.loads(response.text)
+        if text.startswith("```"):
+            text = text.replace("```json", "").replace("```", "").strip()
 
-        except Exception as e:
-            logger.exception(f"Gemini model '{model}' failed")
-            continue
+        return json.loads(text)
 
-    # Fallback if all Gemini models fail
-    return {
-        "score": 8,
-        "feedback": (
-            "AI evaluation is temporarily unavailable. "
-            "This is a mock evaluation."
-        ),
-    }
+    except Exception:
+        logger.exception("Gemini evaluation failed")
+
+        return {
+            "score": 0,
+            "feedback": "AI evaluation is temporarily unavailable.",
+            "ai_feedback": "Unable to generate detailed feedback at this time.",
+        }

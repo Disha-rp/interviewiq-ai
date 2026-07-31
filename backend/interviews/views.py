@@ -88,17 +88,19 @@ class SubmitAnswerView(generics.GenericAPIView):
 
         question.score = result["score"]
         question.feedback = result["feedback"]
+        question.ai_feedback = result["ai_feedback"]
 
         question.save()
 
         return Response(
-            {
-                "message": "Answer submitted successfully.",
-                "score": question.score,
-                "feedback": question.feedback,
-            },
-            status=status.HTTP_200_OK,
-        )
+    {
+        "message": "Answer submitted successfully.",
+        "score": question.score,
+        "feedback": question.feedback,
+        "ai_feedback": question.ai_feedback,
+    },
+    status=status.HTTP_200_OK,
+)
 
 class InterviewReportView(APIView):
     permission_classes = [IsAuthenticated]

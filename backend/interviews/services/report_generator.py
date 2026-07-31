@@ -68,8 +68,7 @@ Format:
         "...",
         "..."
     ],
-    "overall_evaluation":
-    "..."
+    "overall_evaluation": "..."
 }}
 
 Interview:
@@ -77,9 +76,23 @@ Interview:
 {interview_data}
 """
 
-    response = client.models.generate_content(
-        model="gemini-2.5-flash",
-        contents=prompt,
-    )
+    try:
+        response = client.models.generate_content(
+            model="gemini-flash-lite-latest",
+            contents=prompt,
+        )
 
-    return json.loads(response.text)
+        text = response.text.strip()
+
+        if text.startswith("```"):
+            text = text.replace("```json", "").replace("```", "").strip()
+
+        return json.loads(text)
+
+    except Exception:
+        return {
+            "strengths": [],
+            "weaknesses": [],
+            "recommendations": [],
+            "overall_evaluation": "Unable to generate interview report at this time."
+        }

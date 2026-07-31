@@ -1,18 +1,36 @@
-def generate_interview_questions(job_role, difficulty):
+from analyzer.services.gemini_service import (
+    generate_interview_questions_with_gemini,
+)
+
+
+def generate_interview_questions(resume_text, job_role, difficulty):
     """
-    Temporary mock question generator.
-    Later this will use Gemini.
+    Generate interview questions using Gemini AI.
     """
 
-    return [
-        "Tell me about yourself.",
-        f"What are the responsibilities of a {job_role}?",
-        "Explain Object-Oriented Programming.",
-        "What is REST API?",
-        "What is JWT Authentication?",
-        "Explain the difference between GET and POST.",
-        "What is SQL JOIN?",
-        "What is Git and why is it used?",
-        f"What projects have you built related to {job_role}?",
-        f"Why should we hire you for this {difficulty} level role?"
-    ]
+    response = generate_interview_questions_with_gemini(
+        resume_text,
+        job_role,
+        difficulty,
+    )
+    if response.startswith("Gemini API error:") or response.startswith("Gemini integration error:"):
+        raise Exception(response)
+
+    # Convert numbered output into a Python list
+    questions = []
+
+    for line in response.split("\n"):
+        line = line.strip()
+
+        if not line:
+            continue
+
+        # Remove numbering like "1. "
+        if line[0].isdigit():
+            parts = line.split(".", 1)
+            if len(parts) > 1:
+                line = parts[1].strip()
+
+        questions.append(line)
+
+    return questions

@@ -1,11 +1,15 @@
-import { useState } from 'react';
-import Input from '../ui/Input';
-import Button from '../ui/Button';
+import { useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
+import Input from "../ui/Input";
+import Button from "../ui/Button";
+import { login } from "../../services/authService";
 
 function LoginForm() {
   const [values, setValues] = useState({ email: '', password: '', remember: false });
   const [errors, setErrors] = useState({});
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const navigate = useNavigate();
 
   const validate = () => {
     const nextErrors = {};
@@ -24,20 +28,42 @@ function LoginForm() {
     return Object.keys(nextErrors).length === 0;
   };
 
-  const handleSubmit = (event) => {
-    event.preventDefault();
+  const handleSubmit = async (event) => {
+  event.preventDefault();
 
-    if (!validate()) {
-      return;
-    }
+  if (!validate()) {
+    return;
+  }
 
-    setIsSubmitting(true);
+  setIsSubmitting(true);
 
-    window.setTimeout(() => {
-      setIsSubmitting(false);
-      setValues((current) => ({ ...current, password: '' }));
-    }, 1000);
-  };
+  try {
+    const response = await login({
+      email: values.email,
+      password: values.password,
+    });
+
+    console.log("Login Success:", response);
+
+    localStorage.setItem("access", response.access);
+    localStorage.setItem("refresh", response.refresh);
+
+    navigate("/dashboard");
+  } catch (error) {
+    console.error(error);
+
+    const message =
+    error.response?.data?.non_field_errors?.[0] ||
+    error.response?.data?.detail ||
+    "Invalid email or password.";
+
+setErrors({
+  password: message,
+});
+  } finally {
+    setIsSubmitting(false);
+  }
+};
 
   const handleChange = (event) => {
     const { name, value, type, checked } = event.target;
@@ -91,9 +117,12 @@ function LoginForm() {
           <span>Remember me</span>
         </label>
 
-        <a href="#" className="font-medium text-[#3B82F6] hover:text-[#0F4C81]">
-          Forgot password?
-        </a>
+        <Link
+  to="/forgot-password"
+  className="font-medium text-[#3B82F6] hover:text-[#0F4C81]"
+>
+  Forgot password?
+</Link>
       </div>
 
       <Button type="submit" loading={isSubmitting} className="w-full">
@@ -102,9 +131,12 @@ function LoginForm() {
 
       <p className="text-center text-sm text-[#64748B]">
         Don&apos;t have an account?{' '}
-        <a href="#" className="font-semibold text-[#0F4C81] hover:text-[#3B82F6]">
-          Create one
-        </a>
+        <Link
+  to="/register"
+  className="font-semibold text-[#0F4C81] hover:text-[#3B82F6]"
+>
+  Create one
+</Link>
       </p>
     </form>
   );

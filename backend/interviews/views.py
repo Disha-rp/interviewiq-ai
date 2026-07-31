@@ -37,9 +37,10 @@ class InterviewCreateView(generics.CreateAPIView):
         interview = serializer.save(user=self.request.user)
 
         questions = generate_interview_questions(
+            resume.extracted_text,
             interview.job_role,
             interview.difficulty,
-        )
+)
 
         for question in questions:
             InterviewQuestion.objects.create(

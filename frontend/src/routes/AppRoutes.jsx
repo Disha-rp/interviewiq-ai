@@ -8,12 +8,16 @@ import UIShowcase from '../pages/UIShowcase';
 
 const AppRoutes = () => (
   <Routes>
-    <Route path="/" element={<Navigate to="/showcase" replace />} />
+    <Route path="/" element={<Navigate to="/auth" replace />} />
+
     <Route path="/auth" element={<AuthPage />} />
     <Route path="/register" element={<RegisterPage />} />
     <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+
     <Route path="/dashboard" element={<DashboardPage />} />
+
     <Route path="/showcase" element={<UIShowcase />} />
+
     <Route path="*" element={<NotFoundPage />} />
   </Routes>
 );

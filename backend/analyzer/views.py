@@ -1,18 +1,37 @@
-from rest_framework import generics
+﻿from rest_framework.views import APIView
+from rest_framework.response import Response
+from rest_framework import status
 from rest_framework.permissions import IsAuthenticated
 
-from .models import ResumeAnalysis
-from .serializers import ResumeAnalysisSerializer
+from resumes.models import Resume
+from analyzer.services.gemini_service import analyze_resume
 
 
-class ResumeAnalysisView(generics.RetrieveAPIView):
-    serializer_class = ResumeAnalysisSerializer
+class ResumeAnalysisView(APIView):
     permission_classes = [IsAuthenticated]
 
-    def get_object(self):
-        resume_id = self.kwargs["resume_id"]
+    def post(self, request):
+        resume = (
+            Resume.objects.filter(user=request.user)
+            .order_by("-uploaded_at")
+            .first()
+        )
 
-        return ResumeAnalysis.objects.get(
-            resume__id=resume_id,
-            resume__user=self.request.user
+        if not resume:
+            return Response(
+                {"error": "No resume found."},
+                status=status.HTTP_404_NOT_FOUND,
+            )
+
+        analysis_text = analyze_resume(resume.extracted_text)
+
+        if analysis_text.startswith("Gemini API error:"):
+            return Response(
+                {"error": analysis_text},
+                status=status.HTTP_503_SERVICE_UNAVAILABLE,
+            )
+
+        return Response(
+            {"analysis": analysis_text},
+            status=status.HTTP_200_OK,
         )

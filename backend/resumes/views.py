@@ -3,10 +3,18 @@ from rest_framework.permissions import IsAuthenticated
 
 from .models import Resume
 from .serializers import ResumeSerializer
-from .services.pdf_extractor import extract_text_from_pdf
+from .utils import extract_text_from_pdf
 
 from analyzer.models import ResumeAnalysis
-from analyzer.services.gemini_service import analyze_resume_with_gemini
+from analyzer.services.gemini_service import analyze_resume
+
+
+class ResumeListView(generics.ListAPIView):
+    serializer_class = ResumeSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        return Resume.objects.filter(user=self.request.user).order_by("-uploaded_at")
 
 
 class ResumeUploadView(generics.CreateAPIView):
@@ -21,7 +29,7 @@ class ResumeUploadView(generics.CreateAPIView):
         resume.extracted_text = extracted_text
         resume.save()
 
-        analysis = analyze_resume_with_gemini(extracted_text)
+        analysis = analyze_resume(resume.extracted_text)
 
         ResumeAnalysis.objects.create(
             resume=resume,
